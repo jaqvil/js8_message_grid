@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PA3VJ JS8Call Station RX'd messages in Volkel, NL JO21tp</title>
+		<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">	
+		<style>
+        		/* Dark mode styles */
+        		body.dark-mode {
+		        	background-color: #222;
+			        color: #ddd;
+				}
+			body.dark-mode table tr td {
+				color: #eee;
+			}
+			.checkboxes-refresh {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 20px; /* Optional margin for spacing */
+			}
+		        /* Style for the refresh button */
+		        .refresh-btn {
+		        	padding: 2px 3px;
+	            	}
+	        	/* Add more styles for dark mode as needed */
+	    	</style>
+		<script>
+			// Function to toggle dark mode
+			function toggleDarkMode() {
+					            const body = document.body;
+					            body.classList.toggle('dark-mode');
+					            
+					            // Save dark mode preference in local storage
+					            const isDarkMode = body.classList.contains('dark-mode');
+					            localStorage.setItem('darkMode', isDarkMode);
+					        }
+
+	        	// Function to save checkbox values in local storage
+	            	function saveCheckboxState() {
+				const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+			        checkboxes.forEach(checkbox => {
+						if (checkbox.name !== 'darkModeSwitch' && checkbox.id !== 'darkModeSwitch' ) {
+							checkbox.addEventListener('change', function() {
+										localStorage.setItem(checkbox.name, checkbox.checked);
+													});
+							// Retrieve checkbox state from local storage
+							const savedValue = localStorage.getItem(checkbox.name);
+							if (savedValue !== null) {
+										checkbox.checked = savedValue === 'true';
+										}
+							}
+						}
+						);
+			            		}
+			// Check if dark mode preference is saved in local storage
+			window.onload = function() {
+							const darkModeSwitch = document.getElementById('darkModeSwitch');
+							darkModeSwitch.addEventListener('change', function() {
+											                    toggleDarkMode();
+							                		});
+		
+				        		const isDarkMode = localStorage.getItem('darkMode') === 'true';
+							if (isDarkMode) {
+									document.body.classList.add('dark-mode');
+							                darkModeSwitch.checked = true;
+							                }
+
+							saveCheckboxState();
+	
+						
+		            		        }
+		</script>
+	</head>
+	<body>
+		<div class="container mt-5">
+			<h1 class="mb-4">PA3VJ JS8Call Station RX'd messages in Volkel, NL JO21tp</h1>
+			<p>Hi, Jaques here, welcome to this experimental webpage I made for fun.<br>
+			Started out at the end of Nov'23 and who knows how long it will run for and what it will become over time.</p>
+			<p></p>
+			
+			<form action="/" method="GET">
+				<div class="form group checkboxes-refresh">
+					<div>	
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="darkModeSwitch">
+							<label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label"><input class="form-check-input" type="checkbox" name="category" value="no_hb">Do not show heartbeat messages</label>
+						</div>
+					</div> 
+					<div class="btn btn-primary refresh-btn">
+						<div class="form-btn"><input type="submit" value="Refresh"></div>
+					</div>
+				</div>
+			</form>
+
+			<table class="table mt-4" border="1">
+				<thead class="thead-dark">
+					<tr>
+						<th>Timestamp (utc)</th>
+						<th>Frequency (Hz)</th>
+						<th>Grid</th>
+						<th>From</th>
+						<th>To</th>
+						<th>SNR</th>
+						<th>Message</th>
+						<!-- Add more table headers based on your database columns -->
+					</tr>
+				</thead>
+					{% for row in data %}
+				<tr>
+					<td>{{ row[0] }}</td>
+					<td>{{ row[1] }}</td>
+					<td>{{ row[2] }}</td>
+					<td>{{ row[3] }}</td>
+					<td>{{ row[4] }}</td>
+					<td>{{ row[5] }}</td>
+					<td>{{ row[6] }}</td>
+					<!-- Add more table cells based on your database columns -->
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</body>
+</html>
+
