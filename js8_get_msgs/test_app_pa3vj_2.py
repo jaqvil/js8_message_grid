@@ -6,8 +6,9 @@ def main():
     """
     Main function to insert heard messages into the database and monitor JS8Call activity.
     """
+
 # TODO: should be in the interface testing
-""" test_db_connect.insert_heard( 
+""" test_db_connect.insert_heard(
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
         7078000, 
         990, 
@@ -24,7 +25,7 @@ def main():
 
     counter1 = 580
 
-    station_host_name = "dad-desktop.lan"
+    station_host_name = "borgbackup-vm.lan"    #"dad-desktop.lan"
     station_host_port_nr = 42442
     start_net(station_host_name, station_host_port_nr)
 
