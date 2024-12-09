@@ -4,6 +4,7 @@ import mysql.connector
 class TestDBConnection(unittest.TestCase):
 
     def test_connection(self):
+        print('Entering test_connection')
         try:
             cnx = mysql.connector.connect(user='js8user', password='!resu8sj', host='192.168.1.37', database='JS8Call_db')
             cursor = cnx.cursor()
