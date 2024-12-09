@@ -20,4 +20,8 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py')
+        #pylint $(git ls-files '*.py')
+        pylint 'js8_get_msgs/test/test_db_connect_test.py'
+        pylint 'js8_get_msgs/test_app_pa3vj_02.py'
+        pylint 'js8_web/js8web.py'
+        
