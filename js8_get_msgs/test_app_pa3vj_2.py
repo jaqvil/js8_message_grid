@@ -2,7 +2,8 @@ from js8net import *
 from datetime import datetime
 import test_db_connect
 
-test_db_connect.insert_heard( 
+# TODO: should be in the interface testing
+""" test_db_connect.insert_heard( 
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
         7078000, 
         990, 
@@ -15,14 +16,14 @@ test_db_connect.insert_heard(
         "test SNR", 
         "test value",
         0
-        )
+        ) """
 #test_db_connect.insert_heard( datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f"), "test type", "test from call", "test to call", "test SNR", "test value", 0 )
 
 
 counter1 = 580
 counter2 = 0
 
-station_host_name = "dad-desktop.lan"
+station_host_name = "borgbackup-vm.lan"    #"dad-desktop.lan"
 station_host_port_nr = 42442
 start_net(station_host_name,station_host_port_nr)
 
