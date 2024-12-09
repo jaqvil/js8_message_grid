@@ -21,3 +21,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint js8_get_msgs/test_app_pa3vj_2.py js8_web/js8web.py
+

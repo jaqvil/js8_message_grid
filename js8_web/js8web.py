@@ -1,9 +1,8 @@
 #test app from chatGPT 3.5
 
-
+from threading import Thread
 from flask import Flask, render_template, request
 import mysql.connector
-from threading import Thread
 from datetime import datetime
 
 
