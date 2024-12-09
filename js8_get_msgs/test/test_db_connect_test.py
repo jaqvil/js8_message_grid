@@ -2,8 +2,14 @@ import unittest
 import mysql.connector
 
 class TestDBConnection(unittest.TestCase):
+    """
+    Test case for database connection and table existence.
+    """
 
     def test_connection(self):
+        """
+        Test the connection to the database and check if the Heard_msgs table exists.
+        """
         print('Entering test_connection')
         try:
             cnx = mysql.connector.connect(user='js8user', password='!resu8sj', host='192.168.1.37', database='JS8Call_db')
