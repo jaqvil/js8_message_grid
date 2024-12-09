@@ -6,7 +6,8 @@ def main():
     """
     Main function to insert heard messages into the database and monitor JS8Call activity.
     """
-    test_db_connect.insert_heard( 
+# TODO: should be in the interface testing
+""" test_db_connect.insert_heard( 
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
         7078000, 
         990, 
@@ -19,7 +20,7 @@ def main():
         "test SNR", 
         "test value",
         0
-    )
+        ) """
 
     counter1 = 580
 
