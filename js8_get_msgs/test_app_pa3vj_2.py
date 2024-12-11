@@ -1,4 +1,5 @@
-from js8net import *
+from js8net import start_net, rx_queue, get_callsign, get_grid, rx_lock
+import time
 from datetime import datetime
 import test_db_connect
 
@@ -7,21 +8,22 @@ def main():
     Main function to insert heard messages into the database and monitor JS8Call activity.
     """
 
-# TODO: should be in the interface testing
-""" test_db_connect.insert_heard(
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
-        7078000, 
-        990, 
-         7078990, 
-        2, 
-        "JO21tp", 
-        "test type", 
-        "test from call", 
-        "test to call", 
-        "test SNR", 
-        "test value",
-        0
-        ) """
+    # TODO: should be in the interface testing
+    """ test_db_connect.insert_heard(
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+            7078000, 
+            990, 
+            7078990, 
+            2, 
+            "JO21tp", 
+            "test type", 
+            "test from call", 
+            "test to call", 
+            "test SNR", 
+            "test value",
+            0
+            ) 
+    """
 
     counter1 = 580
 
