@@ -17,8 +17,11 @@ db_config = {
 
 DEBUGGING = False
 
-# Function to fetch data from MySQL
+
 def get_data_from_mysql(category_filter=None):
+    """
+    Function to fetch data from MySQL
+    """
     if DEBUGGING:
         print("starting get_data_from_mysql")
     try:
@@ -30,7 +33,7 @@ def get_data_from_mysql(category_filter=None):
         if category_filter:
             #categories = ",".join(["'{}'".format(cat) for cat in category_filter])
             if "no_hb" in category_filter:
-                query += " WHERE heartbeat_related = 0" 
+                query += " WHERE heartbeat_related = 0"
 
         query += " ORDER BY `id` DESC LIMIT 500"
 
@@ -48,7 +51,7 @@ def get_data_from_mysql(category_filter=None):
             for item in data:
                 print(item)
                 if tempcounter >= 10:
-                    break;
+                    break
                 tempcounter = tempcounter + 1
 
         cursor.close()
@@ -61,16 +64,18 @@ def get_data_from_mysql(category_filter=None):
 
 
 
-### This is to insert the calling IP address and the amount of bytes passed to it
-### in the dB table - for interest
-### moved to own function so that we can call it from a seperate thread
-def insert_requesting_ip_to_db(_ip_source_addr, _data_length):
 
+def insert_requesting_ip_to_db(_ip_source_addr, _data_length):
+    """
+    This is to do a database insert the calling IP address 
+    and the amount of bytes passed to it  - for interest
+    moved to own function so that we can call it from a seperate thread
+    """
     print("Timestamp start ip_addr dB insert: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     try:
         connector = mysql.connector.connect(**db_config)
         cursor = connector.cursor()
-        query = ("INSERT INTO WebQuery (`Timestamp`, IP_source_addr, Data_length) VALUES (%s, %s, %s)")
+        query = "INSERT INTO WebQuery (`Timestamp`, IP_source_addr, Data_length) VALUES (%s, %s, %s)"
         values = (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), _ip_source_addr, _data_length)
         cursor.execute( query, values)
         connector.commit()
@@ -85,6 +90,9 @@ def insert_requesting_ip_to_db(_ip_source_addr, _data_length):
 
 @app.route('/')
 def display_data():
+    """
+    The mothod called to show fetched data on a webpage
+    """
     print("Timestamp at request: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     requesting_ip = request.remote_addr
     #print(requesting_ip)
