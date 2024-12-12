@@ -24,7 +24,7 @@ def get_data_from_mysql(category_filter=None):
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        
+
         # Modify this query according to your database schema
         query = "SELECT `Timestamp`, freq_actual, grid, call_from, call_to, snr, `value` FROM Heard_msgs"
         if category_filter:
@@ -35,10 +35,10 @@ def get_data_from_mysql(category_filter=None):
         query += " ORDER BY `id` DESC LIMIT 500"
 
         cursor.execute(query)
-         
+
         # Fetch all rows
         data = cursor.fetchall()
-        
+
         if DEBUGGING:
             print("Debugging:")
             print("Query: ", query)
@@ -53,7 +53,7 @@ def get_data_from_mysql(category_filter=None):
 
         cursor.close()
         connection.close()
-        
+
         return data
     except mysql.connector.Error as error:
         print("Error:", error)
@@ -65,7 +65,7 @@ def get_data_from_mysql(category_filter=None):
 ### in the dB table - for interest
 ### moved to own function so that we can call it from a seperate thread
 def insert_requesting_ip_to_db(_ip_source_addr, _data_length):
-    
+
     print("Timestamp start ip_addr dB insert: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     try:
         connector = mysql.connector.connect(**db_config)
@@ -97,12 +97,12 @@ def display_data():
     # insert to dB
     thread = Thread(target=insert_requesting_ip_to_db, args=(requesting_ip, len(data)))
     thread.start()
-   
+
     if data:
         # Pass the data to the HTML template
         print("Timestamp before render_template: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         return render_template('index.html', data=data)
-    
+
     return "Failed to retrieve data from the database."
 
 if __name__ == '__main__':
