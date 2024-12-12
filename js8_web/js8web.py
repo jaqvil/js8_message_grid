@@ -1,9 +1,8 @@
-#test app from chatGPT 3.5
-
 from threading import Thread
+from datetime import datetime
 from flask import Flask, render_template, request
 import mysql.connector
-from datetime import datetime
+
 
 
 app = Flask(__name__)
@@ -16,11 +15,11 @@ db_config = {
             'database': 'JS8Call_db'
             }
 
-debugging = False
+DEBUGGING = False
 
 # Function to fetch data from MySQL
 def get_data_from_mysql(category_filter=None):
-    if debugging:
+    if DEBUGGING:
         print("starting get_data_from_mysql")
     try:
         connection = mysql.connector.connect(**db_config)
@@ -40,7 +39,7 @@ def get_data_from_mysql(category_filter=None):
         # Fetch all rows
         data = cursor.fetchall()
         
-        if debugging:
+        if DEBUGGING:
             print("Debugging:")
             print("Query: ", query)
             print("")
@@ -65,7 +64,7 @@ def get_data_from_mysql(category_filter=None):
 ### This is to insert the calling IP address and the amount of bytes passed to it
 ### in the dB table - for interest
 ### moved to own function so that we can call it from a seperate thread
-def insertRequestingIpToDB(_ip_source_addr, _data_length):
+def insert_requesting_ip_to_db(_ip_source_addr, _data_length):
     
     print("Timestamp start ip_addr dB insert: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     try:
@@ -79,9 +78,9 @@ def insertRequestingIpToDB(_ip_source_addr, _data_length):
         connector.close()
 
         print("Timestamp after ip_addr dB insert: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    except:
-        print("Error inserting requesting IP addr")
-    
+    except Exception as ex:
+        print("Error inserting requesting IP addr\n", ex)
+
 
 
 @app.route('/')
@@ -96,15 +95,15 @@ def display_data():
     print("Requesting IP: ", requesting_ip)
 
     # insert to dB
-    thread = Thread(target=insertRequestingIpToDB, args=(requesting_ip, len(data)))
+    thread = Thread(target=insert_requesting_ip_to_db, args=(requesting_ip, len(data)))
     thread.start()
    
     if data:
         # Pass the data to the HTML template
         print("Timestamp before render_template: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         return render_template('index.html', data=data)
-    else:
-        return "Failed to retrieve data from the database."
+    
+    return "Failed to retrieve data from the database."
 
 if __name__ == '__main__':
     app.run(

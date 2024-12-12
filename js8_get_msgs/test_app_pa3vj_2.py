@@ -1,6 +1,6 @@
-from js8net import start_net, rx_queue, get_callsign, get_grid, rx_lock
 import time
 from datetime import datetime
+from js8net import start_net, rx_queue, get_callsign, get_grid, rx_lock
 import test_db_connect
 
 def main():
@@ -9,20 +9,21 @@ def main():
     """
 
     # TODO: should be in the interface testing
-    """ test_db_connect.insert_heard(
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
-            7078000, 
-            990, 
-            7078990, 
-            2, 
-            "JO21tp", 
-            "test type", 
-            "test from call", 
-            "test to call", 
-            "test SNR", 
-            "test value",
-            0
-            ) 
+    """ 
+    test_db_connect.insert_heard(
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+        7078000, 
+        990, 
+        7078990, 
+        2, 
+        "JO21tp", 
+        "test type", 
+        "test from call", 
+        "test to call", 
+        "test SNR", 
+        "test value",
+        0
+        ) 
     """
 
     counter1 = 580
@@ -49,22 +50,26 @@ def main():
                         if "HEARTBEAT" in message.get("value"):
                             heartbeat_related_flag = 1
                         try:
-                            test_db_connect.insert_heard( 
-                                datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+                            test_db_connect.insert_heard(
+                                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 message.get("params").get("DIAL"),
                                 message.get("params").get("OFFSET"),
                                 message.get("params").get("FREQ"),
                                 message.get("params").get("SPEED"),
                                 message.get("params").get("GRID"),
-                                message.get("type"), 
-                                message.get("params").get("FROM"), 
-                                message.get("params").get("TO"), 
-                                message.get("params").get("SNR"), 
+                                message.get("type"),
+                                message.get("params").get("FROM"),
+                                message.get("params").get("TO"),
+                                message.get("params").get("SNR"),
                                 message.get("value"),
                                 heartbeat_related_flag
                             )
                         except Exception as err:
-                            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - exception: Trying to add entry to db failed" + str(err))
+                            print(
+                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                    + " - exception: Trying to add entry to db failed"
+                                    + str(err)
+                                )
             time.sleep(0.1)
         else:
             counter1 = 0
