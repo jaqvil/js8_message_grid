@@ -22,5 +22,5 @@ jobs:
         python -m pip install -r js8_web/requirements.txt
     - name: Analysing the code with pylint
       run: |
-        pylint js8_get_msgs/test_app_pa3vj_2.py js8_web/js8web.py --fail-under 5 --fail-on E
+        pylint js8_get_msgs/start_listener.py js8_web/js8web.py --fail-under 5 --fail-on E
 
