@@ -1,4 +1,5 @@
-from js8net import *
+from js8net import start_net, rx_queue, get_callsign, get_grid, rx_lock
+import time
 from datetime import datetime
 import test_db_connect
 
@@ -21,7 +22,8 @@ def main():
             "test SNR", 
             "test value",
             0
-            ) """
+            ) 
+    """
 
     counter1 = 580
 
