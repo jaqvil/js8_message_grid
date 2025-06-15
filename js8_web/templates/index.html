@@ -1,128 +1,664 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>PA3VJ JS8Call Station RX'd messages in Boekel, NL</title>
-		<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">	
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 		<style>
-        		/* Dark mode styles */
-        		body.dark-mode {
-		        	background-color: #222;
-			        color: #ddd;
-				}
-			body.dark-mode table tr td {
-				color: #eee;
+			:root {
+				--bs-body-bg: #ffffff;
+				--bs-body-color: #212529;
+				--table-bg: #ffffff;
+				--table-border: #dee2e6;
+				--table-hover-bg: #f8f9fa;
+				--table-striped-bg: #f2f2f2;
 			}
-			.checkboxes-refresh {
+
+			body.dark-mode {
+				--bs-body-bg: #1a1d20;
+				--bs-body-color: #e9ecef;
+				--table-bg: #2c3034;
+				--table-border: #495057;
+				--table-hover-bg: #343a40;
+				--table-striped-bg: #2c3034;
+			}
+
+			body {
+				background-color: var(--bs-body-bg);
+				color: var(--bs-body-color);
+				transition: background-color 0.3s ease, color 0.3s ease;
+			}
+
+			.table {
+				background-color: var(--table-bg);
+				border-color: var(--table-border);
+				color: var(--bs-body-color);
+			}
+
+			.table thead th {
+				background-color: var(--table-bg);
+				border-bottom: 2px solid var(--table-border);
+				color: var(--bs-body-color);
+			}
+
+			.table td, .table th {
+				border-color: var(--table-border);
+				color: var(--bs-body-color);
+			}
+
+			.table tbody tr:hover {
+				background-color: var(--table-hover-bg);
+			}
+
+			.controls-section {
+				background-color: var(--table-bg);
+				border: 1px solid var(--table-border);
+				border-radius: 8px;
+				padding: 1rem;
+				margin-bottom: 1.5rem;
+			}
+
+			.refresh-btn {
+				transition: all 0.2s ease;
+			}
+
+			.refresh-btn:hover {
+				transform: scale(1.05);
+			}
+
+			.table-responsive {
+				border-radius: 8px;
+				overflow: hidden;
+			}
+
+			.message-cell {
+				max-width: 300px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.message-cell:hover {
+				white-space: normal;
+				overflow: visible;
+			}
+
+			.form-check-input:checked {
+				background-color: #0d6efd;
+				border-color: #0d6efd;
+			}
+
+			.station-info {
+				background-color: var(--table-bg);
+				border: 1px solid var(--table-border);
+				border-radius: 8px;
+				padding: 1rem;
+				margin-bottom: 1.5rem;
+			}
+
+			/* Dark mode specific styles */
+			body.dark-mode .text-muted {
+				color: #adb5bd !important;
+			}
+
+			body.dark-mode .btn-outline-primary {
+				color: #6ea8fe;
+				border-color: #6ea8fe;
+			}
+
+			body.dark-mode .btn-outline-primary:hover {
+				color: #fff;
+				background-color: #6ea8fe;
+				border-color: #6ea8fe;
+			}
+
+			body.dark-mode .table-hover tbody tr:hover {
+				background-color: var(--table-hover-bg);
+			}
+
+			body.dark-mode .form-check-label {
+				color: var(--bs-body-color);
+			}
+
+			/* DataTables custom styles */
+			.dataTables_wrapper .dataTables_filter {
+				margin-bottom: 1rem;
+			}
+
+			.dataTables_wrapper .dataTables_filter input {
+				border: 1px solid var(--table-border);
+				border-radius: 4px;
+				padding: 0.375rem 0.75rem;
+				background-color: var(--table-bg);
+				color: var(--bs-body-color);
+			}
+
+			.dataTables_wrapper .dataTables_length select {
+				border: 1px solid var(--table-border);
+				border-radius: 4px;
+				padding: 0.375rem 0.75rem;
+				background-color: var(--table-bg);
+				color: var(--bs-body-color);
+			}
+
+			.dataTables_wrapper .dataTables_info {
+				color: var(--bs-body-color);
+			}
+
+			.dataTables_wrapper .dataTables_paginate .paginate_button {
+				color: var(--bs-body-color) !important;
+				border: 1px solid var(--table-border) !important;
+				background: var(--table-bg) !important;
+			}
+
+			.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+				background: var(--table-hover-bg) !important;
+				border-color: var(--table-border) !important;
+			}
+
+			.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+				background: #0d6efd !important;
+				color: white !important;
+				border-color: #0d6efd !important;
+			}
+
+			.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+				color: #6c757d !important;
+			}
+
+			/* Add these styles for the filter row */
+			#messagesTable thead tr.filter-row {
+				display: none;
+			}
+
+			#messagesTable thead tr.filter-row.show {
+				display: table-row;
+			}
+
+			#messagesTable thead tr:eq(1) th {
+				padding: 0.5rem;
+			}
+
+			#messagesTable thead tr:eq(1) input {
+				width: 100%;
+				box-sizing: border-box;
+				background-color: var(--table-bg);
+				color: var(--bs-body-color);
+				border: 1px solid var(--table-border);
+			}
+
+			#messagesTable thead tr:eq(1) input:focus {
+				outline: none;
+				border-color: #0d6efd;
+				box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+			}
+
+			body.dark-mode #messagesTable thead tr:eq(1) input {
+				background-color: var(--table-bg);
+				color: var(--bs-body-color);
+				border-color: var(--table-border);
+			}
+
+			body.dark-mode #messagesTable thead tr:eq(1) input:focus {
+				border-color: #6ea8fe;
+				box-shadow: 0 0 0 0.2rem rgba(110, 168, 254, 0.25);
+			}
+
+			/* Style the top controls */
+			.dataTables_wrapper .top {
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				margin-bottom: 20px; /* Optional margin for spacing */
+				margin-bottom: 1rem;
 			}
-		        /* Style for the refresh button */
-		        .refresh-btn {
-		        	padding: 2px 3px;
-	            	}
-	        	/* Add more styles for dark mode as needed */
-	    	</style>
-		<script>
-			// Function to toggle dark mode
-			function toggleDarkMode() {
-					            const body = document.body;
-					            body.classList.toggle('dark-mode');
-					            
-					            // Save dark mode preference in local storage
-					            const isDarkMode = body.classList.contains('dark-mode');
-					            localStorage.setItem('darkMode', isDarkMode);
-					        }
 
-	        	// Function to save checkbox values in local storage
-	            	function saveCheckboxState() {
-				const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-			        checkboxes.forEach(checkbox => {
-						if (checkbox.name !== 'darkModeSwitch' && checkbox.id !== 'darkModeSwitch' ) {
-							checkbox.addEventListener('change', function() {
-										localStorage.setItem(checkbox.name, checkbox.checked);
-													});
-							// Retrieve checkbox state from local storage
-							const savedValue = localStorage.getItem(checkbox.name);
-							if (savedValue !== null) {
-										checkbox.checked = savedValue === 'true';
-										}
-							}
-						}
-						);
-			            		}
-			// Check if dark mode preference is saved in local storage
-			window.onload = function() {
-							const darkModeSwitch = document.getElementById('darkModeSwitch');
-							darkModeSwitch.addEventListener('change', function() {
-											                    toggleDarkMode();
-							                		});
-		
-				        		const isDarkMode = localStorage.getItem('darkMode') === 'true';
-							if (isDarkMode) {
-									document.body.classList.add('dark-mode');
-							                darkModeSwitch.checked = true;
-							                }
+			.dataTables_wrapper .top .dataTables_length {
+				margin-right: 1rem;
+			}
 
-							saveCheckboxState();
-	
-						
-		            		        }
-		</script>
+			.dataTables_wrapper .top .dataTables_filter {
+				margin-left: auto;
+			}
+
+			/* Style for clickable headers */
+			#messagesTable thead tr:first-child th {
+				cursor: pointer;
+				position: relative;
+			}
+
+			#messagesTable thead tr:first-child th:hover {
+				background-color: var(--table-hover-bg);
+			}
+
+			#messagesTable thead tr:first-child th.active {
+				background-color: var(--table-hover-bg);
+			}
+		</style>
 	</head>
 	<body>
-		<div class="container mt-5">
-			<h1 class="mb-4">PA3VJ JS8Call Station RX'd messages in Volkel, NL JO21tp</h1>
-			<p>Hi, Jaques here, welcome to this experimental webpage I made for fun.<br>
-			Started out at the end of Nov'23 and who knows how long it will run for and what it will become over time.</p>
-			<a href="http://pskreporter.info/pskmap?callsign=pa3vj&search=Find" target="_blank">PA3VJ on pskreporter map</a>
-			<p></p>
-			
+		<div class="container py-4">
+			<div class="station-info">
+				<h1 class="h2 mb-3">PA3VJ JS8Call Station</h1>
+				<p class="lead mb-2">RX'd messages in Volkel, NL JO21uo</p>
+				<p class="text-muted mb-0">Started November 2023 - Experimental project. Update 06-'25 to use Bootstrap 5.3.2 and look a bit more modern.</p>
+				<a href="http://pskreporter.info/pskmap?callsign=pa3vj&search=Find" target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+					<i class="bi bi-map"></i> View on PSK Reporter
+				</a>
+			</div>
+
 			<form action="/" method="GET">
-				<div class="form group checkboxes-refresh">
-					<div>	
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" id="darkModeSwitch">
-							<label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+				<div class="controls-section">
+					<div class="row align-items-center">
+						<div class="col-md-8">
+							<div class="form-check form-switch mb-2 mb-md-0">
+								<input class="form-check-input" type="checkbox" id="darkModeSwitch">
+								<label class="form-check-label" for="darkModeSwitch">
+									<i class="bi bi-moon-stars"></i> Dark Mode
+								</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" name="category" value="no_hb" id="noHeartbeat">
+								<label class="form-check-label" for="noHeartbeat">
+									<i class="bi bi-heart"></i> Hide Heartbeat Messages
+								</label>
+							</div>
 						</div>
-						<div class="form-check">
-							<label class="form-check-label"><input class="form-check-input" type="checkbox" name="category" value="no_hb">Do not show heartbeat messages</label>
+						<div class="col-md-4 text-md-end">
+							<button type="submit" class="btn btn-primary refresh-btn">
+								<i class="bi bi-arrow-clockwise"></i> Refresh
+							</button>
 						</div>
-					</div> 
-					<div class="btn btn-primary refresh-btn">
-						<div class="form-btn"><input type="submit" value="Refresh"></div>
 					</div>
 				</div>
 			</form>
 
-			<table class="table mt-4" border="1">
-				<thead class="thead-dark">
-					<tr>
-						<th>Timestamp (utc)</th>
-						<th>Frequency (Hz)</th>
-						<th>Grid</th>
-						<th>From</th>
-						<th>To</th>
-						<th>SNR</th>
-						<th>Message</th>
-						<!-- Add more table headers based on your database columns -->
-					</tr>
-				</thead>
-					{% for row in data %}
-				<tr>
-					<td>{{ row[0] }}</td>
-					<td>{{ row[1] }}</td>
-					<td>{{ row[2] }}</td>
-					<td>{{ row[3] }}</td>
-					<td>{{ row[4] }}</td>
-					<td>{{ row[5] }}</td>
-					<td>{{ row[6] }}</td>
-					<!-- Add more table cells based on your database columns -->
-				</tr>
-				{% endfor %}
-			</table>
+			<div class="table-responsive">
+				<table class="table table-hover" id="messagesTable">
+					<thead>
+						<tr>
+							<th>Timestamp (UTC)</th>
+							<th>Frequency</th>
+							<th>Grid</th>
+							<th>From</th>
+							<th>To</th>
+							<th>SNR</th>
+							<th>Message</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for row in data %}
+						<tr>
+							<td>{{ row[0] }}</td>
+							<td>{{ row[1] }}</td>
+							<td>{{ row[2] }}</td>
+							<td><strong>{{ row[3] }}</strong></td>
+							<td>{{ row[4] }}</td>
+							<td>{{ row[5] }}</td>
+							<td class="message-cell">{{ row[6] }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		</div>
+
+		<!-- Load jQuery first -->
+		<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+		<!-- Then load Bootstrap -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+		<!-- Then load DataTables -->
+		<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+		<script>
+			let refreshTimer = null;
+			const REFRESH_INTERVAL = 15000; // 15 seconds in milliseconds
+			let lastMessageId = null;
+			let dataTable = null;
+			let activeColumn = null;
+			let isFiltering = false;
+
+			// Initialize DataTable
+			$(document).ready(function() {
+				console.log('Document ready - initializing DataTable');
+				
+				// Add filter row to the table
+				$('#messagesTable thead tr').clone(true).addClass('filter-row').appendTo('#messagesTable thead');
+				$('#messagesTable thead tr.filter-row th').each(function(i) {
+					var title = $(this).text();
+					$(this).html('<input type="text" class="form-control form-control-sm" placeholder="Filter ' + title + '" />');
+				});
+
+				// Add click handler for the table header row to hide filters
+				$('#messagesTable thead tr:first-child').on('click', function(e) {
+					// Only handle clicks directly on the row (not on th elements)
+					if (e.target === this) {
+						// Clear all search inputs
+						$('#messagesTable thead tr.filter-row input').val('');
+						// Clear the global search
+						$('.dataTables_filter input').val('');
+						// Clear all column filters in DataTable
+						table.columns().search('').draw();
+						// Hide the filter row
+						$('#messagesTable thead tr.filter-row').removeClass('show');
+						$('#messagesTable thead tr:first-child th').removeClass('active');
+						activeColumn = null;
+						isFiltering = false;
+						// Resume refresh timer if page is visible
+						if (document.visibilityState === 'visible') {
+							startRefreshTimer();
+						}
+					}
+				});
+
+				// Add click handler for column headers
+				$('#messagesTable thead tr:first-child th').on('click', function() {
+					const columnIndex = $(this).index();
+					
+					// Toggle active state
+					if (activeColumn === columnIndex) {
+						// If clicking the same column, hide filters and clear search
+						$('#messagesTable thead tr.filter-row input').val('');
+						table.columns().search('').draw();
+						$('#messagesTable thead tr.filter-row').removeClass('show');
+						$('#messagesTable thead tr:first-child th').removeClass('active');
+						activeColumn = null;
+						isFiltering = false;
+						// Resume refresh timer if page is visible
+						if (document.visibilityState === 'visible') {
+							startRefreshTimer();
+						}
+					} else {
+						// If clicking a different column, show its filter
+						$('#messagesTable thead tr.filter-row').addClass('show');
+						$('#messagesTable thead tr:first-child th').removeClass('active');
+						$(this).addClass('active');
+						activeColumn = columnIndex;
+						isFiltering = true;
+						// Stop refresh timer while filtering
+						stopRefreshTimer();
+					}
+				});
+
+				var table = $('#messagesTable').DataTable({
+					order: [[0, 'desc']], // Sort by timestamp descending by default
+					pageLength: 25,
+					dom: '<"top"f>rt<"bottom"lip><"clear">',
+					language: {
+						search: "Search:",
+						lengthMenu: "Show _MENU_ entries per page",
+						info: "Showing _START_ to _END_ of _TOTAL_ entries",
+						infoEmpty: "No entries to show",
+						//infoFiltered: "(filtered from _MAX_ total entries)",
+						paginate: {
+							first: "First",
+							last: "Last",
+							next: "Next",
+							previous: "Previous"
+						}
+					},
+					columnDefs: [
+						{ targets: '_all', orderable: false } // Disable sorting on all columns
+					]
+				});
+
+				// Remove the Load More button from the UI
+				$('#loadMoreBtn').remove();
+
+				// Store current search state
+				let currentSearch = {
+					column: null,
+					value: null,
+					count: 0
+				};
+
+				// Function to update search state and auto-load more results
+				function updateSearchState() {
+					// Check for active column filter
+					const activeFilter = $('#messagesTable thead tr.filter-row input').filter(function() {
+						return $(this).val().length > 0;
+					}).first();
+
+					// Check for global search
+					const globalSearch = $('.dataTables_filter input').val();
+
+					if (activeFilter.length > 0) {
+						const columnIndex = activeFilter.closest('th').index();
+						const columnName = $('#messagesTable thead tr:first-child th').eq(columnIndex).text().trim();
+						const searchValue = activeFilter.val();
+
+						currentSearch = {
+							column: columnName,
+							value: searchValue,
+							count: table.rows({ search: 'applied' }).count()
+						};
+
+						// If results are less than 50, auto-fetch more
+						if (searchValue && table.rows({ search: 'applied' }).count() < 50) {
+							fetchMoreResults(currentSearch);
+						}
+					} else if (globalSearch) {
+						currentSearch = {
+							column: 'Message', // Default to Message column for global search
+							value: globalSearch,
+							count: table.rows({ search: 'applied' }).count()
+						};
+						if (table.rows({ search: 'applied' }).count() < 50) {
+							fetchMoreResults(currentSearch);
+						}
+					} else {
+						// No active filters
+						currentSearch = {
+							column: null,
+							value: null,
+							count: 0
+						};
+					}
+				}
+
+				// On page load, initialize lastMessageId from localStorage if available
+				const storedId = localStorage.getItem('lastMessageId');
+				if (storedId) {
+					lastMessageId = parseInt(storedId, 10);
+				} else {
+					updateLastMessageIdFromTable();
+				}
+
+				// Function to fetch more results from the backend
+				function fetchMoreResults(search) {
+					if (!search.column || !search.value) return;
+					console.log('Auto-fetching more results:', search);
+					$.get('/search_more', {
+						column: search.column,
+						value: search.value,
+						count: search.count
+					})
+					.done(function(response) {
+						console.log('Auto-fetched more response:', response);
+						if (response.data && response.data.length > 0) {
+							// Clear existing data
+							table.clear();
+							// Add new data
+							response.data.forEach(function(row) {
+								table.row.add(row);
+							});
+							// Redraw table
+							table.draw();
+							// Update lastMessageId in localStorage
+							updateLastMessageIdFromTable();
+						}
+					})
+					.fail(function(error) {
+						console.error('Failed to auto-load more data:', error);
+					});
+				}
+
+				// Handle search input for column filters
+				$('#messagesTable thead tr.filter-row input').on('keyup change', function() {
+					console.log('Column filter changed');
+					const columnIndex = $(this).closest('th').index();
+					if (table.column(columnIndex).search() !== this.value) {
+						isFiltering = true;
+						table
+							.column(columnIndex)
+							.search(this.value)
+							.draw();
+						updateSearchState();
+					}
+				});
+
+				// Handle global search input
+				$('.dataTables_filter input').on('keyup change', function() {
+					console.log('Global search changed');
+					isFiltering = this.value.length > 0;
+					if (isFiltering) {
+						stopRefreshTimer();
+						updateSearchState();
+					} else if (document.visibilityState === 'visible' && !activeColumn) {
+						startRefreshTimer();
+						updateSearchState();
+					}
+				});
+
+				// Initialize dark mode
+				const darkModeSwitch = document.getElementById('darkModeSwitch');
+				darkModeSwitch.addEventListener('change', toggleDarkMode);
+
+				const isDarkMode = localStorage.getItem('darkMode') === 'true';
+				if (isDarkMode) {
+					document.body.classList.add('dark-mode');
+					darkModeSwitch.checked = true;
+				}
+
+				// Start refresh timer if page is visible and not filtering
+				if (document.visibilityState === 'visible' && !isFiltering) {
+					startRefreshTimer();
+				}
+
+				// Persist 'Hide Heartbeat Messages' checkbox state and sync with URL
+				const noHeartbeat = localStorage.getItem('noHeartbeat');
+				const url = new URL(window.location.href);
+
+				if (noHeartbeat === '1') {
+					$('#noHeartbeat').prop('checked', true);
+					// If the URL does not have the filter, reload with it
+					if (!url.searchParams.getAll('category').includes('no_hb')) {
+						url.searchParams.append('category', 'no_hb');
+						window.location.replace(url.toString());
+						return;
+					}
+				} else {
+					$('#noHeartbeat').prop('checked', false);
+					// If the URL has the filter but the box is unchecked, remove it and reload
+					if (url.searchParams.getAll('category').includes('no_hb')) {
+						url.searchParams.delete('category');
+						window.location.replace(url.toString());
+						return;
+					}
+				}
+
+				$('#noHeartbeat').on('change', function() {
+					localStorage.setItem('noHeartbeat', this.checked ? '1' : '0');
+					const url = new URL(window.location.href);
+					if (this.checked) {
+						if (!url.searchParams.getAll('category').includes('no_hb')) {
+							url.searchParams.append('category', 'no_hb');
+							window.location.replace(url.toString());
+						}
+					} else {
+						if (url.searchParams.getAll('category').includes('no_hb')) {
+							url.searchParams.delete('category');
+							window.location.replace(url.toString());
+						}
+					}
+				});
+
+				// After table is drawn (e.g., after fetchMoreResults or reload), update lastMessageId
+				function updateLastMessageIdFromTable() {
+					fetch('/check_updates')
+						.then(response => response.json())
+						.then(data => {
+							lastMessageId = data.latest_id;
+							localStorage.setItem('lastMessageId', lastMessageId);
+						});
+				}
+
+				// Also update lastMessageId after a manual page reload
+				updateLastMessageIdFromTable();
+			});
+
+			async function checkForUpdates() {
+				try {
+					const response = await fetch('/check_updates');
+					const data = await response.json();
+					
+					if (data.latest_id !== lastMessageId && !isFiltering) {
+						// Only reload if there's new data and we're not filtering
+						window.location.reload();
+					}
+				} catch (error) {
+					console.error('Error checking for updates:', error);
+				}
+			}
+
+			function startRefreshTimer() {
+				if (refreshTimer === null) {
+					// Get the initial message ID
+					fetch('/check_updates')
+						.then(response => response.json())
+						.then(data => {
+							lastMessageId = data.latest_id;
+						})
+						.catch(error => console.error('Error getting initial message ID:', error));
+
+					refreshTimer = setInterval(() => {
+						if (document.visibilityState === 'visible') {
+							checkForUpdates();
+						}
+					}, REFRESH_INTERVAL);
+				}
+			}
+
+			function stopRefreshTimer() {
+				if (refreshTimer !== null) {
+					clearInterval(refreshTimer);
+					refreshTimer = null;
+				}
+			}
+
+			// Handle page visibility changes
+			document.addEventListener('visibilitychange', () => {
+				if (document.visibilityState === 'visible') {
+					startRefreshTimer();
+				} else {
+					stopRefreshTimer();
+				}
+			});
+
+			function toggleDarkMode() {
+				const body = document.body;
+				body.classList.toggle('dark-mode');
+				localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+			}
+
+			function saveCheckboxState() {
+				const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+				checkboxes.forEach(checkbox => {
+					if (checkbox.name !== 'darkModeSwitch' && checkbox.id !== 'darkModeSwitch') {
+						checkbox.addEventListener('change', function() {
+							localStorage.setItem(checkbox.name, checkbox.checked);
+						});
+						const savedValue = localStorage.getItem(checkbox.name);
+						if (savedValue !== null) {
+							checkbox.checked = savedValue === 'true';
+						}
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
 

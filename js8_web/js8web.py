@@ -1,6 +1,6 @@
 from threading import Thread
 from datetime import datetime
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import mysql.connector
 
 
@@ -18,7 +18,7 @@ db_config = {
 DEBUGGING = False
 
 
-def get_data_from_mysql(category_filter=None):
+def get_data_from_mysql(category_filter=None, search_column=None, search_value=None, limit=500):
     """
     Function to fetch data from MySQL
     """
@@ -28,16 +28,55 @@ def get_data_from_mysql(category_filter=None):
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        # Modify this query according to your database schema
+        # Base query
         query = "SELECT `Timestamp`, freq_actual, grid, call_from, call_to, snr, `value` FROM Heard_msgs"
+        where_clauses = []
+
+        # Add category filter if specified
         if category_filter:
-            #categories = ",".join(["'{}'".format(cat) for cat in category_filter])
             if "no_hb" in category_filter:
-                query += " WHERE heartbeat_related = 0"
+                where_clauses.append("heartbeat_related = 0")
 
-        query += " ORDER BY `id` DESC LIMIT 500"
+        # Add search filter if specified
+        if search_column and search_value:
+            column_index = {
+                'Timestamp': 0,
+                'Frequency': 1,
+                'Grid': 2,
+                'From': 3,
+                'To': 4,
+                'SNR': 5,
+                'Message': 6
+            }
+            
+            if search_column in column_index:
+                column_name = {
+                    'Timestamp': '`Timestamp`',
+                    'Frequency': 'freq_actual',
+                    'Grid': 'grid',
+                    'From': 'call_from',
+                    'To': 'call_to',
+                    'SNR': 'snr',
+                    'Message': '`value`'
+                }[search_column]
+                
+                where_clauses.append(f"{column_name} LIKE %s")
+                search_value = f"%{search_value}%"
 
-        cursor.execute(query)
+        # Combine where clauses
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+
+        # Add order and limit
+        query += " ORDER BY `id` DESC LIMIT %s"
+
+        # Prepare parameters
+        params = []
+        if search_column and search_value:
+            params.append(search_value)
+        params.append(limit)
+
+        cursor.execute(query, tuple(params))
 
         # Fetch all rows
         data = cursor.fetchall()
@@ -45,6 +84,7 @@ def get_data_from_mysql(category_filter=None):
         if DEBUGGING:
             print("Debugging:")
             print("Query: ", query)
+            print("Parameters: ", params)
             print("")
 
             tempcounter = 1
@@ -112,6 +152,96 @@ def display_data():
         return render_template('index.html', data=data)
 
     return "Failed to retrieve data from the database."
+
+def get_latest_message_id():
+    """
+    Function to get the ID of the latest message
+    """
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = "SELECT MAX(id) FROM Heard_msgs"
+        cursor.execute(query)
+        latest_id = cursor.fetchone()[0]
+        cursor.close()
+        connection.close()
+        return latest_id
+    except mysql.connector.Error as error:
+        print("Error:", error)
+        return None
+
+@app.route('/check_updates')
+def check_updates():
+    """
+    Endpoint to check if there are new messages
+    """
+    latest_id = get_latest_message_id()
+    return jsonify({'latest_id': latest_id})
+
+@app.route('/search_more')
+def search_more():
+    """
+    Endpoint to fetch more historical data for a search
+    """
+    print("Timestamp at search_more: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    search_column = request.args.get('column')
+    search_value = request.args.get('value')
+    current_count = int(request.args.get('count', 0))
+    
+    if not search_column or not search_value:
+        return jsonify({'error': 'Missing search parameters'}), 400
+
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Map frontend column names to database column names
+        column_mapping = {
+            'Timestamp': '`Timestamp`',
+            'Frequency': 'freq_actual',
+            'Grid': 'grid',
+            'From': 'call_from',
+            'To': 'call_to',
+            'SNR': 'snr',
+            'Message': '`value`'
+        }
+
+        # Get the database column name
+        db_column = column_mapping.get(search_column)
+        if not db_column:
+            return jsonify({'error': 'Invalid column name'}), 400
+
+        # Construct the query to fetch more historical data
+        query = f"""
+            SELECT `Timestamp`, freq_actual, grid, call_from, call_to, snr, `value`
+            FROM Heard_msgs
+            WHERE LOWER({db_column}) LIKE LOWER(%s)
+            ORDER BY `id` DESC
+            LIMIT 1000
+        """
+
+        # Execute the query with the search value
+        cursor.execute(query, (f"%{search_value}%",))
+        
+        # Fetch all rows
+        data = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        if data:
+            return jsonify({
+                'data': data,
+                'count': len(data)
+            })
+        return jsonify({'error': 'No data found'}), 404
+
+    except mysql.connector.Error as error:
+        print("Database error:", error)
+        return jsonify({'error': 'Database error occurred'}), 500
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
 if __name__ == '__main__':
     app.run(
